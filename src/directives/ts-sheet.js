@@ -22,7 +22,7 @@ angular.module('ts.sheets')
             });
 
             scope.$on('$destroy', function(){
-              $media.$clearSheets(element);
+              $media.$clearSheets(element, attrs.tsSheet);
             })
           }
         };

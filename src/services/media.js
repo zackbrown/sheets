@@ -61,6 +61,13 @@ angular.module('ts.sheets').provider('$media', function(){
     });
   }
 
+  //naively and greedily test depth by probing first subtree
+  function _getObjectDepth(obj, acc){
+    var keys = !Array.isArray(obj) && Object.keys(obj);
+    if(keys && keys.length) return _getObjectDepth(obj[keys[0]], ++acc);
+    return acc;
+  }
+
   //update element and its subtree, applying all relevant sheets
   function _updateElement(element){
     var id = element.data(SHEET_ID);
@@ -69,42 +76,49 @@ angular.module('ts.sheets').provider('$media', function(){
     var matchedQueries = _resolveMediaQueries();
 
     angular.forEach(sheets, function(sheet){
-      var selectors = Object.keys(sheet);
-      angular.forEach(selectors, function(selector){
-        //these fields are required to have special handler functions
 
-        var fields = Object.keys(sheet[selector]);
+      //support having media queries or omitting them
+      //probe depth:  if depth === 3, we have media queries;
+      //              if depth === 2, we don't.
+
+      var depth = _getObjectDepth(sheet, 0);
+      var matchedLayout;
+      if(depth === 2){
+        matchedLayout = sheet;
+      }else if(depth === 3){
+        var found = false;
+        //loop through the matched queries by descending priority, finding the first query
+        //that exists in obj
+        angular.forEach(matchedQueries, function(query){
+          if(found) return;
+          if(sheet[query.name]){
+            found = true;
+            matchedLayout = sheet[query.name];
+
+          }
+        });
+      }else{
+        throw new Error('Malformed Sheet.  Object depth of 2 or 3 expected.  Actual depth was ' + depth);
+      }
+
+      //nothing to see here
+      if(!matchedLayout) return;
+
+      var selectors = Object.keys(matchedLayout);
+
+      angular.forEach(selectors, function(selector){
+        var fields = Object.keys(matchedLayout[selector]);
         var elements = element[0].querySelectorAll(selector);
 
         angular.forEach(elements, function(childElement){
           angular.forEach(fields, function(field){
-            //determine if the contents of the field are a bare function
-            //or whether they're a collection of media query names (xs, sm, etc.)
-            var guts = sheet[selector][field];
-            var fn = angular.noop;
-            if(guts instanceof Function){
-              fn = guts;
-            }else{
-              //assuming guts is an object in form {xs: function(), sm: function(), etc.}
+            var payload = matchedLayout[selector][field];
+            _fieldHandlers[field](childElement, payload);
+          });
+        });
 
-              //loop through the matched queries by descending priority, finding the first query
-              //that exists in guts
-              var found = false;
-              angular.forEach(matchedQueries, function(query){
-                if(found) return;
-                if(guts[query.name]){
-                  found = true;
-                  fn = guts[query.name];
-                }
-              });
-            }
+      })
 
-            //handle this element with this field using a registered fieldHandler
-            _fieldHandlers[field](childElement, fn);
-          })
-
-        })
-      });
     });
   }
 
@@ -167,9 +181,11 @@ angular.module('ts.sheets').provider('$media', function(){
     //used for clean-up in ts-sheet directive
     //detaches all sheets from an element and stops an element from being updated
     //does NOT automatically undo whatever logic is declared in payload functions
-    $clearSheets: function(element) {
+    $clearSheets: function(element, name) {
       //TODO: test that this works
       var id = element.data(SHEET_ID);
+
+      delete _sheets[name];
       delete _elementSheets[id];
       delete _elements[id]
       _observers[id].disconnect();
@@ -214,16 +230,7 @@ angular.module('ts.sheets').provider('$media', function(){
 
     //TODO:  support different field names by element type
     //       (e.g. different behavior for 'color' for a div vs a span)
-    var DEFAULT_FIELD_HANDLERS = [
-      // example:
-      // {
-      //   field: 'background-color',
-      //   handlerFn: function(element, payloadFn){
-      //     //set element's background color, using the payloadFn for values
-      //     //set up $watches if necessary
-      //   }
-      // }
-    ];
+    var DEFAULT_FIELD_HANDLERS = [];
 
     angular.forEach(DEFAULT_MEDIA_QUERIES, function(mediaQuery){
       _registerMediaQuery(mediaQuery.name, mediaQuery.conditionFn, mediaQuery.priority);

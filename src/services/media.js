@@ -189,6 +189,11 @@ angular.module('ts.sheets').provider('$media', function(){
       delete _elementSheets[id];
       delete _elements[id]
       _observers[id].disconnect();
+    },
+
+    //test whether the mediaQuery of the given name is currently fulfilled
+    $query: function(mediaQuery){
+      return _registeredMediaQueries[mediaQuery]();
     }
   };
 

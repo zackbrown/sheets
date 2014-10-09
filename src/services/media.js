@@ -135,6 +135,7 @@ angular.module('ts.sheets').provider('$media', function(){
   };
 
   var _registeredMediaQueries = [],
+      _registeredMediaQueriesByName = {},
       _sheets = {},
       _elementSheets = {},
       _elements = {},
@@ -144,6 +145,7 @@ angular.module('ts.sheets').provider('$media', function(){
 
   var _registerMediaQuery = this.$registerMediaQuery = function(name, conditionFn, priority){
       _registeredMediaQueries[priority] = {name: name, conditionFn: conditionFn, priority: priority};
+      _registeredMediaQueriesByName[name] = {name: name, conditionFn: conditionFn, priority: priority};
   };
   var _registerFieldHandler = this.$registerFieldHandler = function(fieldName, handlerFn){
       //TODO:  support passing an array of supported elements
@@ -192,8 +194,8 @@ angular.module('ts.sheets').provider('$media', function(){
     },
 
     //test whether the mediaQuery of the given name is currently fulfilled
-    $query: function(mediaQuery){
-      return _registeredMediaQueries[mediaQuery]();
+    $query: function(mediaQueryName){
+      return _registeredMediaQueriesByName[mediaQueryName]();
     }
   };
 

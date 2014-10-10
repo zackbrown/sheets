@@ -195,7 +195,7 @@ angular.module('ts.sheets').provider('$media', function(){
 
     //test whether the mediaQuery of the given name is currently fulfilled
     $query: function(mediaQueryName){
-      return _registeredMediaQueriesByName[mediaQueryName]();
+      return _registeredMediaQueriesByName[mediaQueryName].conditionFn();
     }
   };
 

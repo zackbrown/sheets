@@ -76,26 +76,35 @@ angular.module('ts.sheets').provider('$media', function(){
     var matchedQueries = _resolveMediaQueries();
 
     angular.forEach(sheets, function(sheet){
-
       //support having media queries or omitting them
       //probe depth:  if depth === 3, we have media queries;
       //              if depth === 2, we don't.
 
       var depth = _getObjectDepth(sheet, 0);
-      var matchedLayout;
-      if(depth === 2){
-        matchedLayout = sheet;
-      }else if(depth === 3){
-        var found = false;
-        //loop through the matched queries by descending priority, finding the first query
-        //that exists in obj
-        angular.forEach(matchedQueries, function(query){
-          if(found) return;
-          if(sheet[query.name]){
-            found = true;
-            matchedLayout = sheet[query.name];
+      var mediaQueriesExist = depth === 3;
+      var noMediaQueries = depth === 2;
 
+      var matchedLayout = {};
+
+      if(noMediaQueries){
+        matchedLayout = sheet;
+      }else if(mediaQueriesExist){
+        //loop through the matched queries by descending priority, preserving
+        //the first available fields for each selector
+        angular.forEach(matchedQueries, function(query){
+          var sheetForMediaQuery = sheet[query.name];
+          if(!sheetForMediaQuery) return;
+
+          for (var selector in sheetForMediaQuery) {
+            matchedLayout[selector] = matchedLayout[selector] || {};
+
+            for (var field in sheetForMediaQuery[selector]) {
+              // If field already exists on selector, do not clobber
+              if (matchedLayout[selector][field]) continue;
+              matchedLayout[selector][field] = sheetForMediaQuery[selector][field];
+            }
           }
+
         });
       }else{
         throw new Error('Malformed Sheet.  Object depth of 2 or 3 expected.  Actual depth was ' + depth);

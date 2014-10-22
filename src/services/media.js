@@ -86,6 +86,9 @@ angular.module('ts.sheets').provider('$media', function(){
       if(depth === 2){
         matchedLayout = sheet;
       }else if(depth === 3){
+        //TODO:  might be able to work with depth >= 3
+        //       downside is increased risk of breaking changes
+        //       if it's desired to support more specific/deeper schemas in the future
         var found = false;
         //loop through the matched queries by descending priority, finding the first query
         //that exists in obj

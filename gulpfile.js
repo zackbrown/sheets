@@ -29,9 +29,9 @@ gulp.task('build', ['clean'], function(event) {
 
   // Build the JS
   return gulp.src([
-    'src/scripts/module.js',
-    'src/scripts/services/**/*.js',
-    'src/scripts/directives/**/*.js'
+    'src/module.js',
+    'src/services/**/*.js',
+    'src/directives/**/*.js'
   ])
   .pipe(jshint('.jshintrc'))
   .pipe(jshint.reporter('default'))

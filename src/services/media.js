@@ -19,7 +19,7 @@ angular.module('ts.sheets').provider('$media', function(){
       //       If it's the child node, we'll still need to update the parent tree instead of the child, which might require some
       //       passing of the element ID by closure when creating the mutuationCallback
       console.log('mutation observed', record);
-      if(record.type === "attributes") console.warn("ensure that record.target is the parent node, not a child node", record)
+      if(record.type === "attributes") console.warn("ensure that record.target is the parent node, not a child node", record);
 
       _updateElement(record.target);
     });
@@ -43,10 +43,10 @@ angular.module('ts.sheets').provider('$media', function(){
       if(mediaQuery.conditionFn()) matched.push(mediaQuery);
     });
 
-    if(!matched.length) throw new Error('$media assumes at least one media query will be matched (by default this is \'xs\').')
+    if(!matched.length) throw new Error('$media assumes at least one media query will be matched (by default this is \'xs\').');
 
     //sort media queries descendingly by priority
-    matched.sort(function(a, b){return b.priority - a.priority});
+    matched.sort(function(a, b){return b.priority - a.priority;});
 
     _windowSizeDirty = false;
     _cachedResolvedMediaQueries = matched;
@@ -120,14 +120,14 @@ angular.module('ts.sheets').provider('$media', function(){
           });
         });
 
-      })
+      });
 
     });
   }
 
   //cross-browser addEvent from http://stackoverflow.com/questions/641857/javascript-window-resize-event
   var _addEvent = function(elem, type, eventHandle) {
-    if (elem == null || typeof(elem) == 'undefined') return;
+    if (elem === null || typeof(elem) === 'undefined') return;
     if ( elem.addEventListener ) {
       elem.addEventListener( type, eventHandle, false );
     } else if ( elem.attachEvent ) {
@@ -157,16 +157,16 @@ angular.module('ts.sheets').provider('$media', function(){
   };
 
   var $media = {
-    
+
     //declare a sheet in a controller/presenter
     $sheet: function(name, spec){
-      if(_sheets[name] !== undefined) console.warn('Sheet name \''+name+'\' is already defined.  The latest declaration will overwrite previous declarations.')
+      if(_sheets[name] !== undefined) console.warn('Sheet name \''+name+'\' is already defined.  The latest declaration will overwrite previous declarations.');
       _sheets[name] = spec;
     },
 
     //apply a sheet by name, called at least by ts-sheet directive
     $applySheet: function(element, name){
-      element.data(SHEET_ID, element.data(SHEET_ID) || Math.random()); //TODO:  better uniqueid? 
+      element.data(SHEET_ID, element.data(SHEET_ID) || Math.random()); //TODO:  better uniqueid?
       var id = element.data(SHEET_ID);
       var spec = _sheets[name];
       if(spec === undefined) throw new Error('Sheet \'' + name + '\' is undefined.  Sheets must be defined using $media.$sheet before they can be applied with ts-sheet.');
@@ -192,7 +192,7 @@ angular.module('ts.sheets').provider('$media', function(){
 
       delete _sheets[name];
       delete _elementSheets[id];
-      delete _elements[id]
+      delete _elements[id];
       _observers[id].disconnect();
     },
 
@@ -251,6 +251,6 @@ angular.module('ts.sheets').provider('$media', function(){
     });
 
     return $media;
-  }
+  };
 
 });

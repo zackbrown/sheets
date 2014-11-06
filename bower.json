@@ -1,0 +1,31 @@
+{
+  "name": "sheets",
+  "description": "Handle your presentation logic like CSS, but with Javascript.",
+  "version": "0.0.1",
+  "license": "MPL v2.0",
+  "homepage": "https://github.com/zackbrown/sheets",
+  "main": [
+    "dist/sheets.js"
+  ],
+  "dependencies": {
+    "angular": "1.2.26"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.2.26"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "docs",
+    "bower_components",
+    "test",
+    "gulpfile.js",
+    "src",
+    "init_submodules.sh",
+    "karma.conf.js",
+    "karma-e2e.conf.js",
+    "package.json",
+    "changelog.js",
+    "validateCommitMsg.js"
+  ]
+}

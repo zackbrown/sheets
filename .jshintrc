@@ -1,0 +1,21 @@
+{
+  "node": true,
+  "loopfunc": true,
+  "browser": true,
+  "esnext": true,
+  "bitwise": false,
+  "camelcase": true,
+  "curly": false,
+  "eqeqeq": true,
+  "latedef": true,
+  "indent": 2,
+  "newcap": true,
+  "noarg": true,
+  "regexp": true,
+  "trailing": true,
+  "smarttabs": true,
+  "laxbreak": true,
+  "globals": {
+    "angular": false
+  }
+}

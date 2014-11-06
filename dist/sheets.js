@@ -1,3 +1,13 @@
+/**
+ * sheets - Handle your presentation logic like CSS, but with Javascript.
+ * @version v0.0.1
+ * @link https://github.com/zackbrown/sheets
+ * @license MPL v2.0
+ */
+'use strict';
+
+var tsSheetsModule = angular.module('ts.sheets', []);
+
 angular.module('ts.sheets').provider('$media', function(){
 
   var SHEET_ID = "$$sheetId";
@@ -76,35 +86,29 @@ angular.module('ts.sheets').provider('$media', function(){
     var matchedQueries = _resolveMediaQueries();
 
     angular.forEach(sheets, function(sheet){
+
       //support having media queries or omitting them
       //probe depth:  if depth === 3, we have media queries;
       //              if depth === 2, we don't.
 
       var depth = _getObjectDepth(sheet, 0);
-      var mediaQueriesExist = depth === 3;
-      var noMediaQueries = depth === 2;
-
-      var matchedLayout = {};
-
-      if(noMediaQueries){
+      var matchedLayout;
+      if(depth === 2){
         matchedLayout = sheet;
-      }else if(mediaQueriesExist){
-        //loop through the matched queries by descending priority, preserving
-        //the first available fields for each selector
+      }else if(depth === 3){
+        //TODO:  might be able to work with depth >= 3
+        //       downside is increased risk of breaking changes
+        //       if it's desired to support more specific/deeper schemas in the future
+        var found = false;
+        //loop through the matched queries by descending priority, finding the first query
+        //that exists in obj
         angular.forEach(matchedQueries, function(query){
-          var sheetForMediaQuery = sheet[query.name];
-          if(!sheetForMediaQuery) return;
+          if(found) return;
+          if(sheet[query.name]){
+            found = true;
+            matchedLayout = sheet[query.name];
 
-          for (var selector in sheetForMediaQuery) {
-            matchedLayout[selector] = matchedLayout[selector] || {};
-
-            for (var field in sheetForMediaQuery[selector]) {
-              // If field already exists on selector, do not clobber
-              if (matchedLayout[selector][field]) continue;
-              matchedLayout[selector][field] = sheetForMediaQuery[selector][field];
-            }
           }
-
         });
       }else{
         throw new Error('Malformed Sheet.  Object depth of 2 or 3 expected.  Actual depth was ' + depth);
@@ -209,7 +213,7 @@ angular.module('ts.sheets').provider('$media', function(){
   };
 
   //expose $media service
-  this.$get = function($window){
+  this.$get = ["$window", function($window){
     //note that this will trigger several times per actual resize in some browsers
     _addEvent($window, "resize", _windowResizeCallback);
 
@@ -257,6 +261,38 @@ angular.module('ts.sheets').provider('$media', function(){
     });
 
     return $media;
-  };
+  }];
 
 });
+
+/**
+ * @ngdoc directive
+ * @name tsSheet
+ * @module ts.sheets
+ * @restrict A
+ * @param {string} tsSheet the name of the sheet you want to apply to this DOM subtree
+ * ts-sheet allows you to apply a Sheet to a DOM node's 'subtree
+ * Use it in conjunction with $media.$sheet to apply responsive, declarative, and reactive animations or DOM-manipulation to your application.
+ */
+angular.module('ts.sheets')
+  .directive('tsSheet', ["$media", function ($media) {
+    return {
+      restrict: 'A',
+      scope: false,
+      compile: function () {
+        return {
+          post: function (scope, element, attrs) {
+            //TODO:  $observe tsSheet to support dynamic sheet binding.  Will need to clean up (probably using $media.$clearSheets)
+            //TODO:  support arrays of multiple sheets per element (scope.$eval(attrs.tsSheet))
+            scope.$$postDigest(function(){
+              $media.$applySheet(element, attrs.tsSheet);
+            });
+
+            scope.$on('$destroy', function(){
+              $media.$clearSheets(element, attrs.tsSheet);
+            })
+          }
+        };
+      }
+    };
+  }]);

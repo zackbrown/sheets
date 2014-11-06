@@ -2,7 +2,7 @@
   "name": "sheets",
   "description": "Handle your presentation logic like CSS, but with Javascript.",
   "version": "0.0.1",
-  "license": "MPL v2.0",
+  "license": "MIT",
   "homepage": "https://github.com/zackbrown/sheets",
   "repository": {
     "type": "git",
